@@ -4,9 +4,9 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.selector import Selector
 import pandas as pd
 from tqdm import tqdm
+from multiprocessing import Process
 
-query = input("Enter Search Query:")
-query = '+'.join(query.split())
+query = ""
 urls = ['https://manipal.pure.elsevier.com/en/persons/?search='+query+'&searchBy=PartOfNameOrTitle']
 names, ranks, institutes, site_links, emails = [], [], [], [], []
 
@@ -14,11 +14,11 @@ class MAHE_Scraper(scrapy.Spider):
 	global urls, names, ranks, institutes, site_links, emails
 	name = 'MAHE_Scraper'
 	custom_settings = {
-    	'LOG_ENABLED': False,
+    	'LOG_ENABLED': True,
     }
 	def parse(self, response):
 		data = response.css('.rendering_person_short').getall()
-		for panel in data:
+		for panel in tqdm(data):
 			panel = panel.replace('<div class="rendering rendering_person rendering_short rendering_person_short"><h3 class="title"><a rel="Person" href="', "")
 			site_link = panel[:panel.index('" class="link person"><span>')]
 			panel = panel[panel.index('" class="link person"><span>')+len('" class="link person"><span>'):]
@@ -38,9 +38,24 @@ class MAHE_Scraper(scrapy.Spider):
 			ranks.append(rank)
 		yield None
 
-process = CrawlerProcess({'USER_AGENT': 'Mozilla/5.0'})
-process.crawl(MAHE_Scraper, start_urls=urls)
-process.start()
+def call_query(query_local="Natural Language Processing"):
+	global query, urls
+	query = query_local
+	query = '+'.join(query.split())
+	urls = ['https://manipal.pure.elsevier.com/en/persons/?search='+query+'&pageSize=100&searchBy=PartOfNameOrTitle']
+	process = CrawlerProcess({'USER_AGENT': 'Mozilla/5.0'})
+	process.crawl(MAHE_Scraper, start_urls=urls)
+	process.start()
 
-df = pd.DataFrame({'name': names, 'email': emails, 'site_link': site_links, 'institute': institutes, 'rank': ranks})
-df.to_csv('Current.csv', index=False)
+	df = pd.DataFrame({'name': names, 'email': emails, 'site_link': site_links, 'institute': institutes, 'rank': ranks})
+	df.to_csv('Current.csv', index=False)
+
+if __name__ == '__main__':
+	p = Process(target=call_query)
+	p.start()
+	p.join()
+	q = "Computer Vision"
+	p = Process(target=call_query, args=(q,))
+	p.start()
+	p.join()
+	
