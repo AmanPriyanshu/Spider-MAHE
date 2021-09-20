@@ -23,6 +23,7 @@ def app():
 		st.write(df)
 		tmp_download_link = download_link(df, "QueryResults.csv", "Click here to download!")
 		st.markdown(tmp_download_link, unsafe_allow_html=True)
+		os.remove("Current.csv")
 
 if __name__ == '__main__':
 	app()
