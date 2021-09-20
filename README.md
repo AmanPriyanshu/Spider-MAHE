@@ -1,4 +1,6 @@
 # Spider-MAHE
-Scraper for pulling professor names' on various research topics. Department-wise extraction also available.
+Scraper for pulling professor names' on various research topics. Department-wise extraction also available. 
 
-####  God that name's so awful!
+For creating cold-mailing lists.
+
+### The name's so painful!
